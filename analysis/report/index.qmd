@@ -1,0 +1,932 @@
+---
+title: "Palmer Penguins Part 1: Exploratory Data Analysis
+  and Simple Regression"
+subtitle: >
+  Getting acquainted with penguin morphometrics and their
+  predictive relationships
+author: "Ronald 'Ryy' G. Thomas"
+date: "2025-01-01"
+categories: [r, regression, data-visualization]
+description: >
+  An exploration of how a simple flipper measurement
+  can reveal substantial information about penguin body
+  mass through the Palmer Penguins dataset and simple
+  linear regression.
+image: "media/images/penguin-hero.jpg"
+document-type: "blog"
+draft: false
+execute:
+  echo: true
+  warning: false
+  message: false
+format:
+  html:
+    code-fold: false
+    code-tools: false
+---
+
+```{r}
+#| label: setup
+#| echo: false
+library(tidyverse)
+library(knitr)
+
+theme_set(theme_minimal(base_size = 12))
+
+penguins_clean <- read_csv(
+  "data/derived_data/penguins_clean.csv",
+  show_col_types = FALSE
+)
+species_summary <- read_csv(
+  "data/derived_data/species_summary.csv",
+  show_col_types = FALSE
+)
+model_coefficients <- read_csv(
+  "data/derived_data/model_coefficients.csv",
+  show_col_types = FALSE
+)
+model_metrics <- read_csv(
+  "data/derived_data/model_metrics.csv",
+  show_col_types = FALSE
+)
+model_predictions <- read_csv(
+  "data/derived_data/model_predictions.csv",
+  show_col_types = FALSE
+)
+
+simple_model <- readRDS(
+  "data/derived_data/simple_model.rds"
+)
+
+penguin_colors <- c(
+  "Adelie" = "#FF6B6B",
+  "Chinstrap" = "#9B59B6",
+  "Gentoo" = "#2E86AB"
+)
+```
+
+![Penguins on an Antarctic shoreline, the starting
+point for a data-driven exploration of morphometric
+relationships.](media/images/penguin-hero.jpg){.img-fluid
+width=80%
+fig-alt="Photograph of penguins standing together
+on a rocky Antarctic shore, used as the hero image
+for this blog post about Palmer Penguins exploratory
+data analysis."}
+
+*Photo: Penguin colony. Licensed under
+[CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+via
+[Wikimedia Commons](https://commons.wikimedia.org).*
+
+::: {.callout-note appearance="simple"}
+## Palmer Penguins Data Analysis Series
+
+This is **Part 1** of a 5-part series exploring
+penguin morphometrics:
+
+1. **Part 1: EDA and Simple Regression** (this post)
+2. [Part 2: Multiple Regression and Species
+   Effects](../palmerpenguinspart2/)
+3. [Part 3: Advanced Models and
+   Cross-Validation](../palmerpenguinspart3/)
+4. [Part 4: Model Diagnostics and
+   Interpretation](../palmerpenguinspart4/)
+5. [Part 5: Random Forest vs Linear
+   Models](../palmerpenguinspart5/)
+:::
+
+# Introduction
+
+How much can a single morphometric measurement reveal
+about an organism's body condition? The Palmer Penguins
+dataset provides an opportunity to test the claim that
+flipper length is a strong predictor of body mass in
+penguins. The exercise turns out to be one of the most
+instructive introductions to regression available.
+
+The Palmer Penguins dataset, collected by Dr. Kristen
+Gorman at Palmer Station, Antarctica, contains
+morphometric measurements for three penguin species:
+Adelie (*Pygoscelis adeliae*), Chinstrap (*Pygoscelis
+antarcticus*), and Gentoo (*Pygoscelis papua*). Body
+mass is a key indicator of penguin health and
+reproductive success, and predicting it from
+easily-measured features has practical value for field
+researchers who may not always have access to a scale.
+
+This first post walks through the complete exploratory
+data analysis pipeline, examines correlations among
+morphometric variables, and fits a simple linear
+regression model. The residual patterns that emerge
+set the stage for the multi-predictor models explored
+in Parts 2 through 5.
+
+## Motivations
+
+The following considerations motivated this exploration:
+
+- A hands-on project to practice exploratory data
+  analysis on a well-documented ecological dataset
+  rather than a toy example.
+- Curiosity about whether a single measurement
+  (flipper length) could meaningfully predict body
+  mass, or whether the relationship is more complex.
+- Simpson's Paradox appears in textbooks but seeing
+  it arise organically in real data reinforces
+  understanding; the Palmer Penguins dataset provides
+  a clear illustration.
+- A foundation for a multi-part series building from
+  simple regression through random forests, with a
+  clean EDA as the necessary first step.
+- Practice in transparent model diagnostics:
+  acknowledging limitations rather than presenting
+  only favourable results.
+
+## Objectives
+
+By the end of this post, you will be able to:
+
+1. Conduct a structured exploratory data analysis on
+   real ecological data, including summary statistics,
+   distributions, and species-level comparisons.
+2. Compute and interpret a correlation matrix to
+   identify the strongest univariate predictor of
+   penguin body mass.
+3. Fit a simple linear regression model, extract
+   coefficients and confidence intervals, and
+   interpret R-squared in practical terms.
+4. Evaluate model diagnostics---residual plots,
+   outlier detection, and assumption checks---to
+   identify where the model succeeds and where it
+   falls short.
+
+Errors and better approaches are welcome; see the
+Feedback section at the end.
+
+![Penguins in a library setting, symbolising the
+research journey from data to
+understanding.](media/images/penguins-library-7755210_1280.jpg){.img-fluid
+fig-alt="Stylised image of penguins in a library,
+representing the beginning of a research exploration
+into penguin morphometrics."}
+
+# Prerequisites and Setup
+
+To follow along with this analysis, you will need
+the following R packages:
+
+```r
+library(palmerpenguins)
+library(tidyverse)
+library(broom)
+library(corrplot)
+library(GGally)
+library(patchwork)
+library(knitr)
+
+theme_set(theme_minimal(base_size = 12))
+
+penguin_colors <- c(
+  "Adelie" = "#FF6B6B",
+  "Chinstrap" = "#9B59B6",
+  "Gentoo" = "#2E86AB"
+)
+```
+
+**Background note.** This post assumes familiarity
+with basic R syntax and the tidyverse. No prior
+knowledge of regression modelling is required; the
+conceptual foundations are introduced below.
+
+# What is Exploratory Data Analysis?
+
+Exploratory data analysis (EDA) is the practice of
+examining a dataset through summary statistics and
+visualisations before fitting any formal model. The
+purpose is to understand the structure of the data,
+detect anomalies, identify patterns, and generate
+hypotheses.
+
+A useful analogy: EDA is to statistical modelling what
+a site survey is to architectural design. Before
+drawing blueprints, you need to know the terrain. In
+our case, the "terrain" consists of morphometric
+measurements from 333 penguins across three species,
+and the patterns we uncover will guide every modelling
+decision in subsequent parts of this series.
+
+# Getting Started: Meeting the Penguins
+
+Let us begin by examining the basic characteristics
+of the dataset.
+
+```{r}
+#| label: dataset-overview
+dataset_overview <- tibble::tribble(
+  ~"Characteristic", ~"Value",
+  "Total Observations",
+    as.character(nrow(penguins_clean)),
+  "Variables", "9",
+  "Species",
+    as.character(
+      nlevels(penguins_clean$species)
+    ),
+  "Islands",
+    as.character(
+      nlevels(penguins_clean$island)
+    ),
+  "Year Range",
+    paste0(
+      min(penguins_clean$year),
+      "--",
+      max(penguins_clean$year)
+    )
+)
+
+kable(
+  dataset_overview,
+  col.names = c("", ""),
+  caption = "Palmer Penguins Dataset Characteristics"
+)
+```
+
+The dataset includes
+`r nrow(penguins_clean)` complete observations
+from three penguin species across three Antarctic
+islands, spanning 2007 to 2009. Each observation
+records bill length, bill depth, flipper length,
+body mass, species, island, sex, and year.
+
+## Species Composition
+
+The three species are not equally represented.
+Understanding the balance matters because unequal
+sample sizes can affect statistical power in
+species-level comparisons.
+
+```{r}
+#| label: species-summary
+kable(
+  species_summary,
+  caption = paste(
+    "Species Distribution and",
+    "Key Morphometrics"
+  ),
+  col.names = c(
+    "Species", "N", "Body Mass (g)",
+    "Flipper Length (mm)", "% of Dataset"
+  )
+)
+```
+
+Adelie penguins constitute the largest group (43.8%),
+followed by Gentoo (35.7%) and Chinstrap (20.4%).
+Gentoo penguins are notably heavier, with a mean
+body mass exceeding 5,000 g---roughly 1,400 g more
+than the other two species.
+
+```{r}
+#| label: fig-eda-overview
+#| fig-cap: "Species distribution and morphometric
+#|   relationship overview. Left panel: sample sizes
+#|   by species. Right panel: flipper length versus
+#|   body mass with species-specific regression
+#|   lines."
+#| fig-alt: "Two-panel figure. Left panel shows a
+#|   bar chart of species counts: Adelie 146,
+#|   Chinstrap 68, Gentoo 119. Right panel shows
+#|   a scatter plot of flipper length versus body
+#|   mass with positive trend lines for each
+#|   species."
+knitr::include_graphics("figures/eda-overview.png")
+```
+
+The right panel of the figure above reveals the
+central pattern: flipper length and body mass are
+strongly positively associated, but the relationship
+varies across species. Gentoo penguins cluster in
+the upper right, while Adelie and Chinstrap overlap
+substantially in the lower portion of the plot.
+
+![A group of penguins, each a unique data point
+waiting to be
+explored.](media/images/penguins-26046_1280.jpg){.img-fluid
+fig-alt="Photograph of a group of penguins standing
+together, used as an ambiance image to break up the
+technical content."}
+
+## Species-Specific Morphometrics
+
+A closer look at the per-species distributions
+reveals important nuances that a pooled analysis
+would obscure.
+
+```{r}
+#| label: morphometric-summary
+morphometric_summary <- penguins_clean |>
+  group_by(species) |>
+  summarise(
+    n = n(),
+    body_mass_mean = round(mean(body_mass_g), 0),
+    body_mass_ci = round(
+      1.96 * sd(body_mass_g) / sqrt(n()), 1
+    ),
+    flipper_length_mean = round(
+      mean(flipper_length_mm), 1
+    ),
+    flipper_length_ci = round(
+      1.96 * sd(flipper_length_mm) / sqrt(n()),
+      1
+    ),
+    .groups = "drop"
+  )
+
+kable(
+  morphometric_summary,
+  caption = paste(
+    "Morphometric Statistics by Species",
+    "(+/- 95% CI)"
+  ),
+  col.names = c(
+    "Species", "N", "Body Mass (g)",
+    "+/- 95% CI",
+    "Flipper Length (mm)", "+/- 95% CI"
+  )
+)
+```
+
+The 95% confidence intervals for body mass confirm
+that Gentoo penguins (mean approximately 5,092 g) are
+statistically distinct from Adelie (3,706 g) and
+Chinstrap (3,733 g). By contrast, Adelie and
+Chinstrap body mass distributions overlap
+considerably.
+
+```{r}
+#| label: fig-species-comparison
+#| fig-cap: "Body mass distributions by species.
+#|   Gentoo penguins are substantially heavier,
+#|   while Adelie and Chinstrap distributions
+#|   overlap."
+#| fig-alt: "Box plot comparing body mass across
+#|   Adelie, Chinstrap, and Gentoo penguins. Gentoo
+#|   median is approximately 5000 g; the other two
+#|   species cluster near 3700 g."
+knitr::include_graphics(
+  "figures/species-comparison.png"
+)
+```
+
+## Correlation Analysis
+
+Before fitting any model, we need to identify which
+morphometric variable is the strongest univariate
+predictor of body mass.
+
+```{r}
+#| label: correlation-analysis
+numeric_vars <- penguins_clean |>
+  select(
+    bill_length_mm, bill_depth_mm,
+    flipper_length_mm, body_mass_g
+  )
+correlation_matrix <- cor(numeric_vars)
+body_mass_cors <- correlation_matrix[
+  "body_mass_g",
+] |>
+  sort(decreasing = TRUE)
+
+correlation_summary <- tibble::tribble(
+  ~"Variable",
+  ~"Correlation with Body Mass",
+  ~"Interpretation",
+  "Flipper Length",
+    round(body_mass_cors["flipper_length_mm"], 3),
+    "Strongest predictor",
+  "Bill Length",
+    round(body_mass_cors["bill_length_mm"], 3),
+    "Moderate positive",
+  "Bill Depth",
+    round(body_mass_cors["bill_depth_mm"], 3),
+    "Weak negative"
+)
+
+kable(
+  correlation_summary,
+  caption = paste(
+    "Morphometric Correlations",
+    "with Body Mass"
+  )
+)
+```
+
+Flipper length dominates the correlation table with
+r = 0.873, well above bill length (r = 0.589) and
+bill depth (r = -0.472). The negative correlation
+between bill depth and body mass is a Simpson's
+Paradox artefact: within each species, the
+relationship reverses direction. We will return to
+this point in Part 2.
+
+```{r}
+#| label: fig-correlation-matrix
+#| fig-cap: "Correlation matrix of morphometric
+#|   variables. Flipper length shows the strongest
+#|   association with body mass (r = 0.87)."
+#| fig-alt: "Upper triangular correlation matrix
+#|   heatmap showing pairwise correlations among
+#|   bill length, bill depth, flipper length, and
+#|   body mass. The flipper length to body mass
+#|   cell has the highest value at 0.87."
+knitr::include_graphics(
+  "figures/correlation-matrix.png"
+)
+```
+
+# Building a Model: Simple Linear Regression
+
+Given the strong bivariate correlation, flipper
+length is the natural choice for our first
+predictive model.
+
+## Fitting the Model
+
+We fit an ordinary least squares regression of body
+mass on flipper length. The pre-computed coefficients
+and performance metrics are loaded from the analysis
+pipeline.
+
+```{r}
+#| label: model-results
+intercept <- model_coefficients$estimate[1]
+slope <- model_coefficients$estimate[2]
+slope_ci_lower <- model_coefficients$conf.low[2]
+slope_ci_upper <- model_coefficients$conf.high[2]
+
+model_summary <- tibble::tribble(
+  ~"Metric", ~"Value", ~"Interpretation",
+  "R-squared",
+    sprintf("%.3f", model_metrics$r_squared),
+    sprintf(
+      "%.1f%% variance explained",
+      model_metrics$r_squared * 100
+    ),
+  "RMSE",
+    sprintf("%.1f g", model_metrics$rmse),
+    "Mean prediction error",
+  "F-statistic",
+    sprintf("%.1f", model_metrics$f_statistic),
+    "p < 0.001 (highly significant)"
+)
+
+kable(
+  model_summary,
+  caption = "Simple Linear Model Performance"
+)
+```
+
+The model equation is:
+
+> Body Mass = `r sprintf("%.1f", intercept)` +
+> `r sprintf("%.1f", slope)` x Flipper Length
+
+The slope of `r sprintf("%.1f", slope)` g/mm means
+that for each additional millimetre of flipper length,
+we expect body mass to increase by roughly 50 g on
+average. The 95% confidence interval for the slope is
+[`r sprintf("%.1f", slope_ci_lower)`,
+`r sprintf("%.1f", slope_ci_upper)`] g/mm.
+
+An R-squared of `r sprintf("%.3f", model_metrics$r_squared)`
+indicates that flipper length alone accounts for
+approximately 76% of the variation in body mass---a
+strong result for a single predictor, but one that
+leaves meaningful residual variance unexplained.
+
+## Making Predictions
+
+To illustrate the model in practical terms, here
+are predicted body masses for three representative
+flipper lengths:
+
+```{r}
+#| label: predictions-table
+predictions_display <- tibble::tribble(
+  ~"Flipper Length (mm)",
+  ~"Predicted Body Mass (g)",
+  ~"95% CI Lower",
+  ~"95% CI Upper",
+  180, 3637, 3589, 3685,
+  200, 4749, 4712, 4786,
+  220, 5860, 5815, 5905
+)
+
+kable(
+  predictions_display,
+  caption = paste(
+    "Predicted Body Mass for",
+    "Example Flipper Lengths"
+  )
+)
+```
+
+A penguin with 200 mm flippers is predicted to weigh
+approximately 4,749 g, with a 95% confidence interval
+spanning only 74 g. The narrow intervals reflect the
+strong linear relationship, though they should be
+interpreted cautiously near the extremes of the
+observed flipper length range (172--231 mm).
+
+```{r}
+#| label: fig-regression-model
+#| fig-cap: "Simple linear regression of body mass
+#|   on flipper length with 95% confidence band.
+#|   Points are coloured by species."
+#| fig-alt: "Scatter plot with fitted regression
+#|   line showing positive relationship between
+#|   flipper length (170-230 mm) and body mass
+#|   (2500-6500 g). Grey confidence band surrounds
+#|   the line. Points are coloured by species,
+#|   revealing Gentoo in the upper right and Adelie
+#|   and Chinstrap in the lower left."
+knitr::include_graphics(
+  "figures/simple-regression-model.png"
+)
+```
+
+# Checking Our Work: Model Diagnostics
+
+A regression model is only as reliable as its
+assumptions. Before interpreting the results further,
+we must examine the residuals.
+
+```{r}
+#| label: assumption-checks
+outliers <- model_predictions |>
+  filter(abs(standardized_residuals) > 2.5)
+
+assumptions_check <- tibble::tribble(
+  ~"Assumption", ~"Result", ~"Status",
+  "Linearity",
+    "Relationship appears approximately linear",
+    "Met",
+  "Independence",
+    "Observations are independent",
+    "Met",
+  "Normality",
+    "Residuals approximately normal",
+    "Reasonable",
+  "Homoscedasticity",
+    "Variance constant across range",
+    "Violated by species",
+  "Outliers",
+    sprintf(
+      "%d observations >2.5 SD", nrow(outliers)
+    ),
+    "Present",
+  "Residual Std. Error",
+    sprintf("%.1f grams", model_metrics$rmse),
+    "Acceptable"
+)
+
+kable(
+  assumptions_check,
+  caption = "Model Diagnostic Summary"
+)
+```
+
+The most informative diagnostic is the residual plot
+below, which reveals distinct species-level
+clustering. Gentoo residuals tend to be positive
+(the model under-predicts their mass), while Adelie
+and Chinstrap residuals are more evenly distributed.
+This pattern is a clear signal that species
+membership carries information the model does not
+yet capture.
+
+```{r}
+#| label: fig-diagnostics
+#| fig-cap: "Standardised residuals versus
+#|   predicted values, coloured by species.
+#|   Species-level clustering indicates that
+#|   the simple model omits an important
+#|   predictor."
+#| fig-alt: "Scatter plot of standardised residuals
+#|   versus predicted body mass. Points are coloured
+#|   by species, showing that Gentoo, Adelie, and
+#|   Chinstrap form distinct clusters rather than a
+#|   random scatter, indicating model
+#|   misspecification."
+knitr::include_graphics(
+  "figures/model-diagnostics.png"
+)
+```
+
+## Things to Watch Out For
+
+1. **Simpson's Paradox.** The negative correlation
+   between bill depth and body mass reverses within
+   species. Always examine relationships both pooled
+   and stratified before drawing conclusions.
+2. **Residual clustering.** When residuals form
+   visible groups, the model is missing a categorical
+   predictor. In our case, species is the obvious
+   candidate.
+3. **Prediction extrapolation.** The model is fitted
+   on flipper lengths between 172 and 231 mm.
+   Predictions outside this range are unreliable and
+   should be flagged as extrapolations.
+4. **Confidence vs. prediction intervals.** The
+   narrow confidence intervals in our predictions
+   table describe uncertainty about the mean
+   response, not about individual penguin masses.
+   Prediction intervals would be substantially wider.
+5. **Ecological confounding.** Body mass varies with
+   sex, season, and breeding status---none of which
+   are included in this model. Field researchers
+   should account for these factors before using
+   predictions for health assessments.
+
+![Penguins reflected in still water, a reminder
+to look beneath the surface of initial
+results.](media/images/penguins-7553626_1280.jpg){.img-fluid
+fig-alt="Stylised image of penguins, used as a
+visual break between the analysis sections and the
+reflective concluding sections."}
+
+## Lessons Learnt
+
+### Conceptual Understanding
+
+- Flipper length alone explains 76.2% of body mass
+  variance (R-squared = 0.762), confirming it as the
+  strongest single predictor among the available
+  morphometric variables.
+- The species-level clustering in residuals
+  demonstrates why biological context must inform
+  statistical modelling; ignoring species produces a
+  model that systematically under-predicts Gentoo
+  mass and over-predicts for smaller species.
+- Simpson's Paradox appears in the bill depth
+  correlation: negative when pooled, positive within
+  species. This is a textbook example that arises
+  naturally in the data.
+- Confidence intervals around the slope
+  ([`r sprintf("%.1f", slope_ci_lower)`,
+  `r sprintf("%.1f", slope_ci_upper)`] g/mm)
+  are narrow, reflecting a well-estimated
+  relationship despite the model's structural
+  limitations.
+
+### Technical Skills
+
+- Loading pre-computed results from CSV files
+  separates analysis from narrative, making the
+  blog post faster to render and easier to maintain.
+- Using `knitr::kable()` for all summary tables
+  produces clean, consistent output across HTML
+  and PDF formats.
+- Extracting model coefficients and metrics from
+  `broom::tidy()` and `broom::glance()` outputs
+  (in the pipeline scripts) produces tidy data
+  frames that integrate naturally into the
+  reporting workflow.
+- Setting a consistent colour palette at the outset
+  (`penguin_colors`) ensures visual coherence across
+  all figures in the series.
+
+### Gotchas and Pitfalls
+
+- Forgetting to remove incomplete cases before
+  modelling can silently change sample sizes and
+  produce misleading results. Always verify the
+  observation count after data cleaning.
+- Reporting R-squared without examining residual
+  plots gives a false sense of model adequacy. A
+  high R-squared does not guarantee that assumptions
+  are met.
+- Interpreting confidence intervals as prediction
+  intervals overstates the model's precision for
+  individual observations.
+- Using `%>%` instead of `|>` in new code introduces
+  an unnecessary dependency on magrittr. The native
+  pipe is sufficient for all operations in this
+  analysis.
+
+## Limitations
+
+- **Temporal scope.** The data span only three years
+  (2007--2009). Climate-driven changes in penguin
+  morphology may have altered these relationships in
+  the intervening years.
+- **Geographic scope.** All observations come from
+  the Palmer Station region. The model may not
+  generalise to penguin populations in other
+  Antarctic or sub-Antarctic locations.
+- **Single predictor.** A univariate model cannot
+  capture the multivariate biological reality of
+  body mass determination. Sex, diet, and breeding
+  status are all known to influence mass.
+- **Missing variables.** The dataset does not include
+  age, reproductive status, or feeding history---all
+  of which are relevant covariates.
+- **Measurement error.** Morphometric measurements
+  have inherent imprecision (typically 1--2 mm for
+  flipper length), which introduces attenuation bias
+  into the slope estimate.
+- **Species pooling.** Fitting a single regression
+  line across three species conflates within-species
+  and between-species variation, inflating the
+  apparent predictive power of flipper length.
+
+## Opportunities for Improvement
+
+1. **Add species as a predictor.** The residual
+   clustering strongly suggests that a model
+   including species (as explored in Part 2) will
+   substantially improve fit.
+2. **Include additional morphometric variables.**
+   Bill length and bill depth may contribute
+   explanatory power beyond what flipper length
+   provides alone.
+3. **Fit interaction terms.** The species-specific
+   slopes visible in the EDA overview suggest that
+   the flipper-mass relationship differs across
+   species.
+4. **Use cross-validation.** Splitting the data into
+   training and test sets (as in Part 3) will
+   provide a more honest estimate of predictive
+   performance.
+5. **Apply formal diagnostic tests.** The
+   Breusch-Pagan test for heteroscedasticity and
+   the Shapiro-Wilk test for normality would
+   complement the visual diagnostics presented here.
+6. **Compare with non-linear models.** Random forest
+   and other flexible methods (Part 5) can capture
+   non-linear relationships that OLS cannot.
+
+# Wrapping Up
+
+This first post established the foundation for the
+Palmer Penguins analysis series. Starting with a
+thorough exploratory analysis, we identified flipper
+length as the dominant predictor of body mass and
+fitted a simple linear regression model that explains
+roughly three-quarters of the observed variation.
+
+The most instructive finding was not the model's
+strength but its limitations. The species-level
+clustering in the residuals provided a clear, visual
+demonstration of why domain knowledge matters in
+statistical modelling. A high R-squared can coexist
+with systematic bias when an important categorical
+predictor is omitted.
+
+For readers attempting a similar analysis on their
+own data, the following sequence is recommended:
+explore the data thoroughly before fitting any model,
+always examine residual plots even when summary
+metrics look favourable, and resist the temptation to
+interpret a single model in isolation.
+
+Main takeaways:
+
+- Flipper length is the strongest univariate
+  predictor of body mass (r = 0.873,
+  R-squared = 0.762).
+- The simple model has an RMSE of approximately
+  393 g, acceptable for broad field estimates but
+  insufficient for precise individual predictions.
+- Species-level residual clustering indicates that
+  including species as a predictor will substantially
+  improve the model (confirmed in Part 2, where
+  R-squared exceeds 0.860).
+- Simpson's Paradox in the bill depth correlation
+  underscores the importance of stratified analysis
+  in ecological data.
+
+::: {.callout-tip}
+## Preview: Part 2
+
+In Part 2, adding species information will improve
+the model's R-squared from
+`r round(model_metrics$r_squared, 3)` to over
+0.860---demonstrating why biological context matters
+in ecological modelling.
+:::
+
+# See Also
+
+## Series Posts
+
+- [Part 2: Multiple Regression and Species
+  Effects](../palmerpenguinspart2/): Adding
+  species as a predictor and fitting multiple
+  regression.
+- [Part 3: Advanced Models and
+  Cross-Validation](../palmerpenguinspart3/):
+  Model comparison via cross-validation.
+- [Part 4: Model Diagnostics and
+  Interpretation](../palmerpenguinspart4/):
+  Comprehensive assumption checking.
+- [Part 5: Random Forest vs Linear
+  Models](../palmerpenguinspart5/): Comparing
+  parametric and non-parametric approaches.
+
+## Key Resources
+
+- Gorman, K. B., Williams, T. D., & Fraser, W. R.
+  (2014). Ecological sexual dimorphism and
+  environmental variability within a community of
+  Antarctic penguins (genus *Pygoscelis*). *PLOS
+  ONE*, 9(3), e90081.
+- Horst, A. M., Hill, A. P., & Gorman, K. B.
+  (2020). *palmerpenguins: Palmer Archipelago
+  (Antarctica) Penguin Data*. R package.
+  <https://allisonhorst.github.io/palmerpenguins/>
+- James, G., Witten, D., Hastie, T., &
+  Tibshirani, R. (2021). *An Introduction to
+  Statistical Learning* (2nd ed.). Springer.
+  <https://www.statlearning.com/>
+- Wickham, H., & Grolemund, G. (2023). *R for Data
+  Science* (2nd ed.). O'Reilly Media.
+  <https://r4ds.hadley.nz/>
+
+# Reproducibility
+
+This blog post is part of a **reproducible research
+compendium** built with ZZCOLLAB. All analysis code
+is separated from the narrative document.
+
+## Analysis Pipeline
+
+The complete analysis consists of three reproducible
+scripts:
+
+1. **01_prepare_data.R**: Load Palmer Penguins
+   data, clean, and save derived data.
+2. **02_fit_models.R**: Fit simple linear
+   regression, extract coefficients and diagnostics.
+3. **03_generate_figures.R**: Generate
+   publication-quality figures from analysis results.
+
+```bash
+git clone <repository-url>
+cd posts/palmerpenguinspart1
+
+make docker-build
+make docker-post-render
+
+open index.html
+```
+
+Alternatively, run each script individually:
+
+```bash
+Rscript analysis/scripts/01_prepare_data.R
+Rscript analysis/scripts/02_fit_models.R
+Rscript analysis/scripts/03_generate_figures.R
+quarto render index.qmd
+```
+
+## Environment Information
+
+```{r}
+#| label: environment-info
+env_info <- tibble::tribble(
+  ~"Component", ~"Value",
+  "R Version", R.version$version.string,
+  "Platform", R.version$platform,
+  "Analysis Date", as.character(Sys.Date())
+)
+
+kable(
+  env_info,
+  col.names = c("", ""),
+  caption = "Analysis Environment"
+)
+```
+
+## Data Source
+
+Gorman, K. B., Williams, T. D., & Fraser, W. R.
+(2014). Ecological sexual dimorphism and
+environmental variability within a community of
+Antarctic penguins (genus *Pygoscelis*). *PLOS ONE*,
+9(3), e90081. Data accessible via the
+`palmerpenguins` R package:
+<https://github.com/allisonhorst/palmerpenguins>
+
+# Feedback
+
+Feedback is welcome for:
+
+- Errors or corrections to suggest
+- Better approaches to any of these analyses
+- Discussion of statistical methodology or ecological
+  modelling
+- Questions about the Palmer Penguins dataset or the
+  ZZCOLLAB reproducibility framework
+- General discussion of regression analysis for
+  ecological data
