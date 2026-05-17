@@ -1,9 +1,6 @@
 ---
 title: "Palmer Penguins Part 1: Exploratory Data Analysis
   and Simple Regression"
-subtitle: >
-  Getting acquainted with penguin morphometrics and their
-  predictive relationships
 author: "Ronald 'Ryy' G. Thomas"
 date: "2025-01-01"
 categories: [r, regression, data-visualization]
