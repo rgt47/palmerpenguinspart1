@@ -76,21 +76,13 @@ data analysis."}
 via
 [Wikimedia Commons](https://commons.wikimedia.org).*
 
-::: {.callout-note appearance="simple"}
-## Palmer Penguins Data Analysis Series
-
-This is **Part 1** of a 5-part series exploring
-penguin morphometrics:
-
-1. **Part 1: EDA and Simple Regression** (this post)
-2. [Part 2: Multiple Regression and Species
-   Effects](../palmerpenguinspart2/)
-3. [Part 3: Advanced Models and
-   Cross-Validation](../palmerpenguinspart3/)
-4. [Part 4: Model Diagnostics and
-   Interpretation](../palmerpenguinspart4/)
-5. [Part 5: Random Forest vs Linear
-   Models](../palmerpenguinspart5/)
+::: {.callout-note}
+**Palmer Penguins Series** -- This is part 1 of 5:
+[Part 1](/posts/08-palmerpenguinspart1/) |
+[Part 2](/posts/09-palmerpenguinspart2/) |
+[Part 3](/posts/10-palmerpenguinspart3/) |
+[Part 4](/posts/11-palmerpenguinspart4/) |
+[Part 5](/posts/12-palmerpenguinspart5/)
 :::
 
 # Introduction
