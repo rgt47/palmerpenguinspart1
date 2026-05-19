@@ -104,10 +104,10 @@ reproductive success, and predicting it from
 easily-measured features has practical value for field
 researchers who may not always have access to a scale.
 
-This first post walks through the complete exploratory
-data analysis pipeline, examines correlations among
-morphometric variables, and fits a simple linear
-regression model. The residual patterns that emerge
+In this first post we walk through the complete
+exploratory data analysis pipeline, examine
+correlations among morphometric variables, and fit
+a simple linear regression model. The residual patterns that emerge
 set the stage for the multi-predictor models explored
 in Parts 2 through 5.
 
@@ -134,7 +134,7 @@ The following considerations motivated this exploration:
 
 ## Objectives
 
-By the end of this post, you will be able to:
+By the end of this post, we will have:
 
 1. Conduct a structured exploratory data analysis on
    real ecological data, including summary statistics,
@@ -162,7 +162,7 @@ into penguin morphometrics."}
 
 # Prerequisites and Setup
 
-To follow along with this analysis, you will need
+To follow along with this analysis, one will need
 the following R packages:
 
 ```r
@@ -198,10 +198,10 @@ detect anomalies, identify patterns, and generate
 hypotheses.
 
 A useful analogy: EDA is to statistical modelling what
-a site survey is to architectural design. Before
-drawing blueprints, you need to know the terrain. In
-our case, the "terrain" consists of morphometric
-measurements from 333 penguins across three species,
+a site survey is to architectural design. Before drawing
+blueprints, one needs to know the terrain. In our case,
+the "terrain" consists of morphometric measurements
+from 333 penguins across three species,
 and the patterns we uncover will guide every modelling
 decision in subsequent parts of this series.
 
@@ -772,28 +772,29 @@ statistical modelling. A high R-squared can coexist
 with systematic bias when an important categorical
 predictor is omitted.
 
-For readers attempting a similar analysis on their
-own data, the following sequence is recommended:
-explore the data thoroughly before fitting any model,
-always examine residual plots even when summary
-metrics look favourable, and resist the temptation to
-interpret a single model in isolation.
+For those undertaking a similar analysis, we recommend
+the following sequence: explore the data thoroughly
+before fitting any model, always examine residual plots
+even when summary metrics look favourable, and resist
+the temptation to interpret a single model in
+isolation.
 
-Main takeaways:
-
-- Flipper length is the strongest univariate
-  predictor of body mass (r = 0.873,
-  R-squared = 0.762).
-- The simple model has an RMSE of approximately
-  393 g, acceptable for broad field estimates but
-  insufficient for precise individual predictions.
-- Species-level residual clustering indicates that
-  including species as a predictor will substantially
-  improve the model (confirmed in Part 2, where
-  R-squared exceeds 0.860).
-- Simpson's Paradox in the bill depth correlation
-  underscores the importance of stratified analysis
-  in ecological data.
+In conclusion, four points merit emphasis. First,
+flipper length is the strongest univariate predictor
+of body mass (r = 0.873, R-squared = 0.762),
+confirming that a single morphometric measurement
+carries substantial information about body condition.
+Second, the simple model has an RMSE of approximately
+393 g, acceptable for broad field estimates but
+insufficient for precise individual predictions.
+Third, species-level residual clustering indicates
+that including species as a predictor will
+substantially improve the model, as confirmed in
+Part 2, where R-squared exceeds 0.860. Fourth,
+Simpson's Paradox in the bill depth correlation
+underscores the importance of stratified analysis in
+ecological data and serves as a useful reminder that
+pooled associations can mislead.
 
 ::: {.callout-tip}
 ## Preview: Part 2
