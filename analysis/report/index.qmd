@@ -9,7 +9,7 @@ description: >
   can reveal substantial information about penguin body
   mass through the Palmer Penguins dataset and simple
   linear regression.
-image: "media/images/penguin-hero.jpg"
+image: "media/images/penguin-hero.png"
 document-type: "blog"
 draft: false
 execute:
@@ -66,7 +66,7 @@ penguin_colors <- c(
 
 ![Penguins on an Antarctic shoreline, the starting
 point for a data-driven exploration of morphometric
-relationships.](media/images/penguin-hero.jpg){.img-fluid
+relationships.](media/images/penguin-hero.png){.img-fluid
 width=80%
 fig-alt="Photograph of penguins standing together
 on a rocky Antarctic shore, used as the hero image
