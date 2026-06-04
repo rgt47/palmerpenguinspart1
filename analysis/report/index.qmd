@@ -11,7 +11,7 @@ description: >
   linear regression.
 image: "media/images/penguin-hero.png"
 document-type: "blog"
-draft: false
+draft: true
 execute:
   echo: true
   warning: false
