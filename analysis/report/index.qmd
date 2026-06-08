@@ -1,6 +1,6 @@
 ---
 title: 'Palmer Penguins Part 1: Exploratory Data Analysis and Simple Regression'
-author: Ronald 'Ryy' G. Thomas
+author: Ronald G. Thomas
 date: '2025-01-01'
 categories:
 - r
