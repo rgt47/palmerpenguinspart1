@@ -931,6 +931,8 @@ Feedback is welcome for:
 This post is part of the *Palmer Penguins Analysis Arc* series.
 Recommended reading order:
 
+0. **Precursor: [zzcollab Analysis Profile Walkthrough](../zc-analysis-profile-walkthrough/)** --
+   set up the reproducible compendium used throughout this series
 1. **Post 50: Palmer Penguins Part 1: Exploratory Data Analysis** (this post)
 2. Post 51: [Palmer Penguins Part 2: Multiple Regression](../51-pp-multiple-regression/)
 3. Post 52: [Palmer Penguins Part 3: Cross-Validation](../52-pp-cross-validation/)
