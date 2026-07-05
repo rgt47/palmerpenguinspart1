@@ -14,7 +14,7 @@ description: 'An exploration of how a simple flipper measurement can reveal subs
   '
 image: media/images/penguin-hero.png
 document-type: blog
-draft: false
+draft: true
 execute:
   echo: true
   warning: false
