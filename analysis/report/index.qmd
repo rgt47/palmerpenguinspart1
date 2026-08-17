@@ -1,19 +1,11 @@
 ---
-title: 'Palmer Penguins Part 1: Exploratory Data Analysis and Simple Regression'
+title: "Palmer Penguins Part 1: Exploratory Data Analysis and Simple Regression"
 author: "Ronald G. Thomas"
-date: '2025-01-01'
-categories:
-- r
-- regression
-- data-visualization
-- penguins-arc
-description: 'An exploration of how a simple flipper measurement can reveal substantial
-  information about penguin body mass through the Palmer Penguins dataset and simple
-  linear regression.
-
-  '
-image: media/images/penguin-hero.png
-document-type: blog
+date: "2025-01-01"
+categories: [r, regression, data-visualization, penguins-arc]
+description: "An exploration of how a simple flipper measurement can reveal substantial information about penguin body mass through the Palmer Penguins dataset and simple linear regression."
+image: "media/images/penguin-hero.png"
+document-type: "blog"
 draft: true
 execute:
   echo: true
