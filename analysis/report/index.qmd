@@ -922,10 +922,10 @@ Recommended reading order:
 0. **Precursor: [zzcollab Analysis Profile Walkthrough](../zc-analysis-profile-walkthrough/)** --
    set up the reproducible compendium used throughout this series
 1. **Post 50: Palmer Penguins Part 1: Exploratory Data Analysis** (this post)
-2. Post 51: [Palmer Penguins Part 2: Multiple Regression](../51-pp-multiple-regression/)
-3. Post 52: [Palmer Penguins Part 3: Cross-Validation](../52-pp-cross-validation/)
-4. Post 53: [Palmer Penguins Part 4: Model Diagnostics](../53-pp-diagnostics/)
-5. Post 54: [Palmer Penguins Part 5: Random Forest versus Linear](../54-pp-random-forest/)
-6. Post 55: [Predictive Modeling of Penguin Body Mass](../55-pp-body-mass-prediction/)
-7. Post 56: [Functional Plot Generation with purrr](../56-pp-grouped-plots-with-purrr/)
+2. Post 51: [Palmer Penguins Part 2: Multiple Regression](../pp-multiple-regression/)
+3. Post 52: [Palmer Penguins Part 3: Cross-Validation](../pp-cross-validation/)
+4. Post 53: [Palmer Penguins Part 4: Model Diagnostics](../pp-diagnostics/)
+5. Post 54: [Palmer Penguins Part 5: Random Forest versus Linear](../pp-random-forest/)
+6. Post 55: [Predictive Modeling of Penguin Body Mass](../pp-body-mass-prediction/)
+7. Post 56: [Functional Plot Generation with purrr](../pp-grouped-plots-with-purrr/)
 
