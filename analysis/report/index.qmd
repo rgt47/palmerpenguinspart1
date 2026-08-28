@@ -123,7 +123,7 @@ The following considerations motivated this exploration:
   clean EDA as the necessary first step.
 - Practice in transparent model diagnostics:
   acknowledging limitations rather than presenting
-  only favourable results.
+  only favorable results.
 
 ## Objectives
 
@@ -146,10 +146,10 @@ By the end of this post, we will have:
 Errors and better approaches are welcome; see the
 Feedback section at the end.
 
-![Penguins in a library setting, symbolising the
+![Penguins in a library setting, symbolizing the
 research journey from data to
 understanding.](media/images/penguins-library-7755210_1280.jpg){.img-fluid
-fig-alt="Stylised image of penguins in a library,
+fig-alt="Stylized image of penguins in a library,
 representing the beginning of a research exploration
 into penguin morphometrics."}
 
@@ -178,24 +178,24 @@ penguin_colors <- c(
 
 **Background note.** This post assumes familiarity
 with basic R syntax and the tidyverse. No prior
-knowledge of regression modelling is required; the
+knowledge of regression modeling is required; the
 conceptual foundations are introduced below.
 
 # What is Exploratory Data Analysis?
 
 Exploratory data analysis (EDA) is the practice of
 examining a dataset through summary statistics and
-visualisations before fitting any formal model. The
+visualizations before fitting any formal model. The
 purpose is to understand the structure of the data,
 detect anomalies, identify patterns, and generate
 hypotheses.
 
-A useful analogy: EDA is to statistical modelling what
+A useful analogy: EDA is to statistical modeling what
 a site survey is to architectural design. Before drawing
 blueprints, one needs to know the terrain. In our case,
 the "terrain" consists of morphometric measurements
 from 333 penguins across three species,
-and the patterns we uncover will guide every modelling
+and the patterns we uncover will guide every modeling
 decision in subsequent parts of this series.
 
 # Getting Started: Meeting the Penguins
@@ -407,7 +407,7 @@ Flipper length dominates the correlation table with
 r = 0.873, well above bill length (r = 0.589) and
 bill depth (r = -0.472). The negative correlation
 between bill depth and body mass is a Simpson's
-Paradox artefact: within each species, the
+Paradox artifact: within each species, the
 relationship reverses direction. We will return to
 this point in Part 2.
 
@@ -474,7 +474,7 @@ The model equation is:
 > `r sprintf("%.1f", slope)` x Flipper Length
 
 The slope of `r sprintf("%.1f", slope)` g/mm means
-that for each additional millimetre of flipper length,
+that for each additional millimeter of flipper length,
 we expect body mass to increase by roughly 50 g on
 average. The 95% confidence interval for the slope is
 [`r sprintf("%.1f", slope_ci_lower)`,
@@ -633,11 +633,11 @@ knitr::include_graphics(
 ![Penguins reflected in still water, a reminder
 to look beneath the surface of initial
 results.](media/images/penguins-7553626_1280.jpg){.img-fluid
-fig-alt="Stylised image of penguins, used as a
+fig-alt="Stylized image of penguins, used as a
 visual break between the analysis sections and the
 reflective concluding sections."}
 
-## Lessons Learnt
+## Lessons Learned
 
 ### Conceptual Understanding
 
@@ -647,7 +647,7 @@ reflective concluding sections."}
   morphometric variables.
 - The species-level clustering in residuals
   demonstrates why biological context must inform
-  statistical modelling; ignoring species produces a
+  statistical modeling; ignoring species produces a
   model that systematically under-predicts Gentoo
   mass and over-predicts for smaller species.
 - Simpson's Paradox appears in the bill depth
@@ -674,14 +674,14 @@ reflective concluding sections."}
   (in the pipeline scripts) produces tidy data
   frames that integrate naturally into the
   reporting workflow.
-- Setting a consistent colour palette at the outset
+- Setting a consistent color palette at the outset
   (`penguin_colors`) ensures visual coherence across
   all figures in the series.
 
 ### Gotchas and Pitfalls
 
 - Forgetting to remove incomplete cases before
-  modelling can silently change sample sizes and
+  modeling can silently change sample sizes and
   produce misleading results. Always verify the
   observation count after data cleaning.
 - Reporting R-squared without examining residual
@@ -704,7 +704,7 @@ reflective concluding sections."}
   the intervening years.
 - **Geographic scope.** All observations come from
   the Palmer Station region. The model may not
-  generalise to penguin populations in other
+  generalize to penguin populations in other
   Antarctic or sub-Antarctic locations.
 - **Single predictor.** A univariate model cannot
   capture the multivariate biological reality of
@@ -761,14 +761,14 @@ The most instructive finding was not the model's
 strength but its limitations. The species-level
 clustering in the residuals provided a clear, visual
 demonstration of why domain knowledge matters in
-statistical modelling. A high R-squared can coexist
+statistical modeling. A high R-squared can coexist
 with systematic bias when an important categorical
 predictor is omitted.
 
 For those undertaking a similar analysis, we recommend
 the following sequence: explore the data thoroughly
 before fitting any model, always examine residual plots
-even when summary metrics look favourable, and resist
+even when summary metrics look favorable, and resist
 the temptation to interpret a single model in
 isolation.
 
@@ -796,7 +796,7 @@ In Part 2, adding species information will improve
 the model's R-squared from
 `r round(model_metrics$r_squared, 3)` to over
 0.860---demonstrating why biological context matters
-in ecological modelling.
+in ecological modeling.
 :::
 
 # See Also
@@ -908,7 +908,7 @@ Feedback is welcome for:
 - Errors or corrections to suggest
 - Better approaches to any of these analyses
 - Discussion of statistical methodology or ecological
-  modelling
+  modeling
 - Questions about the Palmer Penguins dataset or the
   ZZCOLLAB reproducibility framework
 - General discussion of regression analysis for
