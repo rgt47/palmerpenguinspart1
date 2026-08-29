@@ -767,8 +767,8 @@ predictor is omitted.
 
 For those undertaking a similar analysis, we recommend
 the following sequence: explore the data thoroughly
-before fitting any model, always examine residual plots
-even when summary metrics look favorable, and resist
+before fitting any model, and always examine residual
+plots even when summary metrics look favorable. Resist
 the temptation to interpret a single model in
 isolation.
 
