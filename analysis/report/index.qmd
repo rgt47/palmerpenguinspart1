@@ -6,7 +6,7 @@ categories: [r, regression, data-visualization, penguins-arc]
 description: "An exploration of how a simple flipper measurement can reveal substantial information about penguin body mass through the Palmer Penguins dataset and simple linear regression."
 image: "media/images/penguin-hero.png"
 document-type: "blog"
-draft: true
+draft: false
 execute:
   echo: true
   warning: false
